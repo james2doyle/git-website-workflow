@@ -1,4 +1,4 @@
-#!/bin/bash -i
+#!/usr/bin/env bash -i
 
 BLACK='\x1b[30m'
 RED='\x1b[31m'
@@ -71,7 +71,7 @@ echo "pushing changes to hub"
 git push hub master
 _EOF_`
 
-echo -e "Created $YELLOW.git/hooks/post-commit$END with push to hub"
+echo -e "\nCreated $YELLOW.git/hooks/post-commit$END with push to hub\n"
 
 git remote add hub $(echo $THISPATH)/$HUBFOLDER
 git remote show hub
