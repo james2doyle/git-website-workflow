@@ -1,0 +1,103 @@
+#!/bin/bash -i
+
+BLACK='\x1b[30m'
+RED='\x1b[31m'
+GREEN='\x1b[32m'
+YELLOW='\x1b[33m'
+BLUE='\x1b[34m'
+MAGENTA='\x1b[35m'
+CYAN='\x1b[36m'
+WHITE='\x1b[37m'
+NC='\x1b[m'
+END='\x1b[0m'
+
+# grab the name of the project to also be used as the folder names
+echo -n "Project name > "
+read FOLDER
+HUBFOLDER=$FOLDER"_hub.git"
+THISPATH="${PWD}"
+
+echo -e "Creating $RED$HUBFOLDER$END repo hub\n"
+
+mkdir $HUBFOLDER
+cd $HUBFOLDER
+
+git --bare init --shared=all
+
+echo
+touch hooks/post-receive
+chmod u+x hooks/post-receive
+
+# creating htaccess so that you cant see the .git directory
+touch .htaccess
+`cat > .htaccess <<- _EOF_
+Order allow,deny
+Deny from all
+_EOF_`
+
+echo -e "Created $YELLOW.htaccess$END with to deny http access\n"
+
+`cat > hooks/post-receive <<- _EOF_
+#!/bin/sh
+
+echo "pulling changes to live site directory"
+
+cd $(echo $THISPATH)/$FOLDER
+unset GIT_DIR
+git pull hub master
+
+exec git-update-server-info
+_EOF_`
+
+echo -e "Created $YELLOW.git/hooks/post-receive$END with hub pull\n"
+
+# start prime folder creation
+cd ../
+echo -e "Creating $RED$FOLDER$END site folder\n"
+
+mkdir $FOLDER
+cd $FOLDER
+
+git init --shared=all
+
+touch .git/hooks/post-commit
+chmod u+x .git/hooks/post-commit
+
+`cat > .git/hooks/post-commit <<- _EOF_
+#!/bin/sh
+
+echo "pushing changes to hub"
+
+git push hub master
+_EOF_`
+
+echo -e "Created $YELLOW.git/hooks/post-commit$END with push to hub"
+
+git remote add hub $(echo $THISPATH)/$HUBFOLDER
+git remote show hub
+
+touch .gitignore
+`cat > .gitignore <<- _EOF_
+.DS_Store
+_EOF_`
+echo -e "\ncreated$YELLOW .gitignore$END\n"
+
+touch README.md
+`cat > README.md <<- _EOF_
+$FOLDER
+==================
+Created on $(TZ=EST date)
+_EOF_`
+
+echo -e "created$YELLOW README.md$END"
+
+git add .
+git commit -m 'initial'
+git push hub master
+cd ../
+
+echo -e "$GREEN\nFINISHED CREATING $FOLDER PROJECT$END\n"
+
+echo -e "clone url = ssh://username@ip-or-url.com$THISPATH/$HUBFOLDER"
+
+exit 0
