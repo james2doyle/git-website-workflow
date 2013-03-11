@@ -13,14 +13,20 @@ END='\x1b[0m'
 
 # grab the name of the project to also be used as the folder names
 echo -n "Project name > "
-read FOLDER
-HUBFOLDER=$FOLDER"_hub.git"
-THISPATH="${PWD}"
+read folder
 
-echo -e "Creating $RED$HUBFOLDER$END repo hub\n"
+if [ -d "$folder" ]; then
+  echo -e "$folder directory already exists"
+  exit 1
+fi
 
-mkdir $HUBFOLDER
-cd $HUBFOLDER
+hubFolder=$folder"_hub.git"
+thisPath="${PWD}"
+
+echo -e "Creating $RED$hubFolder$END repo hub\n"
+
+mkdir $hubFolder
+cd $hubFolder
 
 git --bare init --shared=all
 
@@ -42,7 +48,7 @@ echo -e "Created $YELLOW.htaccess$END with to deny http access\n"
 
 echo "pulling changes to live site directory"
 
-cd $(echo $THISPATH)/$FOLDER
+cd $(echo $thisPath)/$folder
 unset GIT_DIR
 git pull hub master
 
@@ -53,10 +59,10 @@ echo -e "Created $YELLOW.git/hooks/post-receive$END with hub pull\n"
 
 # start prime folder creation
 cd ../
-echo -e "Creating $RED$FOLDER$END site folder\n"
+echo -e "Creating $RED$folder$END site folder\n"
 
-mkdir $FOLDER
-cd $FOLDER
+mkdir $folder
+cd $folder
 
 git init --shared=all
 
@@ -73,7 +79,7 @@ _EOF_`
 
 echo -e "\nCreated $YELLOW.git/hooks/post-commit$END with push to hub\n"
 
-git remote add hub $(echo $THISPATH)/$HUBFOLDER
+git remote add hub $(echo $thisPath)/$hubFolder
 git remote show hub
 
 touch .gitignore
@@ -84,18 +90,18 @@ echo -e "\ncreated$YELLOW .gitignore$END\n"
 
 touch README.md
 `cat > README.md <<- _EOF_
-$FOLDER
+$folder
 ==================
 Created on $(TZ=EST date)
 _EOF_`
 
-echo -e "created$YELLOW README.md$END"
+echo -e "created$YELLOW README.md$END\n"
 
 git add .
 git commit -m 'initial'
 git push hub master
 cd ../
 
-echo -e "$GREEN\nFINISHED CREATING $FOLDER PROJECT$END\n"
+echo -e "$GREEN\nFINISHED CREATING $folder PROJECT$END\n"
 
 exit 0
