@@ -98,6 +98,4 @@ cd ../
 
 echo -e "$GREEN\nFINISHED CREATING $FOLDER PROJECT$END\n"
 
-echo -e "clone url = ssh://username@ip-or-url.com$THISPATH/$HUBFOLDER"
-
 exit 0
