@@ -1,107 +1,103 @@
 #!/usr/bin/env bash -i
 
-BLACK='\x1b[30m'
-RED='\x1b[31m'
-GREEN='\x1b[32m'
-YELLOW='\x1b[33m'
-BLUE='\x1b[34m'
-MAGENTA='\x1b[35m'
-CYAN='\x1b[36m'
-WHITE='\x1b[37m'
-NC='\x1b[m'
-END='\x1b[0m'
+red=$(tput setaf 1 || tput AF 1)
+green=$(tput setaf 2 || tput AF 2)
+yellow=$(tput setaf 3 || tput AF 3)
+blue=$(tput setaf 4 || tput AF 4)
+magenta=$(tput setaf 5 || tput AF 5)
+cyan=$(tput setaf 6 || tput AF 6)
+reset=$(tput sgr0)
 
 # grab the name of the project to also be used as the folder names
 echo -n "Project name > "
 read folder
 
-if [ -d "$folder" ]; then
-  echo -e "$folder directory already exists"
+# check for the existance of $folder
+if [[ -e "$folder" ]]; then
+  printf "$red$folder already exists. Use another name or remove $folder\n$reset"
   exit 1
 fi
 
-hubFolder=$folder"_hub.git"
+hubFolder="${folder}_hub.git"
 thisPath="${PWD}"
 
-echo -e "Creating $RED$hubFolder$END repo hub\n"
+printf "Creating $red$hubFolder$reset repo hub\n\n"
 
-mkdir $hubFolder
-cd $hubFolder
+mkdir "$hubFolder"
+cd "$hubFolder"
 
 git --bare init --shared=all
 
-echo
 touch hooks/post-receive
 chmod u+x hooks/post-receive
 
 # creating htaccess so that you cant see the .git directory
 touch .htaccess
-`cat > .htaccess <<- _EOF_
+cat > .htaccess <<- _EOF_
 Order allow,deny
 Deny from all
-_EOF_`
+_EOF_
 
-echo -e "Created $YELLOW.htaccess$END with to deny http access\n"
+printf "Created$yellow .htaccess$reset to deny http access\n\n"
 
-`cat > hooks/post-receive <<- _EOF_
+cat > hooks/post-receive <<- _EOF_
 #!/bin/sh
-
 echo "pulling changes to live site directory"
-
-cd $(echo $thisPath)/$folder
+cd $(printf $thisPath/$folder)
 unset GIT_DIR
 git pull hub master
-
 exec git-update-server-info
-_EOF_`
+_EOF_
 
-echo -e "Created $YELLOW.git/hooks/post-receive$END with hub pull\n"
+printf "Created$yellow .git/hooks/post-receive$reset with hub pull\n\n"
 
 # start prime folder creation
 cd ../
-echo -e "Creating $RED$folder$END site folder\n"
 
-mkdir $folder
-cd $folder
+printf "Creating $red$folder$reset site folder\n\n"
+
+mkdir "$folder"
+cd "$folder"
 
 git init --shared=all
 
 touch .git/hooks/post-commit
 chmod u+x .git/hooks/post-commit
 
-`cat > .git/hooks/post-commit <<- _EOF_
+cat > .git/hooks/post-commit <<- _EOF_
 #!/bin/sh
-
 echo "pushing changes to hub"
-
 git push hub master
-_EOF_`
+_EOF_
 
-echo -e "\nCreated $YELLOW.git/hooks/post-commit$END with push to hub\n"
+printf "\nCreated$yellow .git/hooks/post-commit$reset with push to hub\n\n"
 
 git remote add hub $(echo $thisPath)/$hubFolder
 git remote show hub
 
 touch .gitignore
-`cat > .gitignore <<- _EOF_
+
+cat > .gitignore <<- _EOF_
 .DS_Store
-_EOF_`
-echo -e "\ncreated$YELLOW .gitignore$END\n"
+_EOF_
+
+printf "\ncreated$yellow .gitignore$reset\n\n"
 
 touch README.md
-`cat > README.md <<- _EOF_
+
+cat > README.md <<- _EOF_
 $folder
 ==================
 Created on $(TZ=EST date)
-_EOF_`
+_EOF_
 
-echo -e "created$YELLOW README.md$END\n"
+printf "created$yellow README.md$reset\n\n"
 
 git add .
 git commit -m 'initial'
 git push hub master
 cd ../
 
-echo -e "$GREEN\nFINISHED CREATING $folder PROJECT$END\n"
+printf "$green\nFINISHED CREATING $folder PROJECT$reset\n\n"
 
 exit 0
