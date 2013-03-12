@@ -4,7 +4,8 @@
 #
 # Create git-capable, self-hosted, projects easily.
 #
-# Copyright 2013 MIT, James Doyle(james2doyle)
+# James Doyle(james2doyle)
+# Copyright 2013 MIT
 
 red=$(tput setaf 1 || tput AF 1)
 green=$(tput setaf 2 || tput AF 2)
