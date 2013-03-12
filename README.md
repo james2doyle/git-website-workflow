@@ -3,6 +3,14 @@ git-website-workflow
 
 a script that creates a git-capable website workflow ala http://goo.gl/0L3E6
 
+### What's in here
+
+* creates both a project folder and its hub
+* adds .htaccess to .git folder to deny http access
+* creates hooks in both repos
+* creates README.md and .gitignore
+* does an initial commit to initialize everything
+
 ### Usage
 
 Own that sucker.
